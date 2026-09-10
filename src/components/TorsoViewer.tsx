@@ -176,8 +176,9 @@ export const TorsoViewer: React.FC = () => {
     const loader = new GLTFLoader();
     interactableObjectsRef.current = [];
 
+    const modelUrl = `${import.meta.env.BASE_URL}models/bikini_torso.glb`;
     loader.load(
-      '/models/bikini_torso.glb',
+      modelUrl,
       (gltf) => {
         let torsoMesh: THREE.Mesh | null = null;
 
