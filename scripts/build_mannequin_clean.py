@@ -50,6 +50,35 @@ def generate_short_leg_prominent_cleft_torso():
     torso_final.apply_scale(scale)
     bikini_cut.apply_scale(scale)
 
+    # === STEP 0: REFINE THE SILHOUETTE ===
+    # Keep the existing source mesh and physics-friendly dimensions, but improve
+    # the hourglass transition with broad, smooth deformations rather than hard
+    # vertex edits. The same profile is applied to the bikini before conforming.
+    def refine_silhouette(vertices):
+        refined = vertices.copy()
+        y = refined[:, 1]
+
+        waist = np.exp(-((y - 0.405) / 0.095) ** 2)
+        hips = np.exp(-((y - 0.255) / 0.105) ** 2)
+        upper_thigh = np.exp(-((y - 0.105) / 0.095) ** 2)
+
+        # A defined waist, fuller hip line, and a softer thigh transition.
+        refined[:, 0] *= 1.0 - 0.095 * waist + 0.065 * hips + 0.018 * upper_thigh
+        refined[:, 2] *= 1.0 - 0.025 * waist + 0.045 * hips + 0.012 * upper_thigh
+
+        # Add gentle volume to the two rear lobes while leaving the cleft open.
+        rear = np.clip((refined[:, 2] - 0.005) / 0.12, 0.0, 1.0)
+        lobe = np.exp(-((np.abs(refined[:, 0]) - 0.095) / 0.085) ** 2)
+        refined[:, 2] += 0.010 * hips * rear * lobe
+
+        # Round the lower glute-to-thigh transition without widening the cut edge.
+        lower_glute = np.exp(-((y - 0.145) / 0.055) ** 2)
+        refined[:, 2] += 0.004 * lower_glute * rear
+        return refined
+
+    torso_final.vertices = refine_silhouette(torso_final.vertices)
+    bikini_cut.vertices = refine_silhouette(bikini_cut.vertices)
+
     # Subdivide bikini twice for smooth fabric
     vb1, fb1 = trimesh.remesh.subdivide(bikini_cut.vertices, bikini_cut.faces)
     b1 = trimesh.Trimesh(vertices=vb1, faces=fb1, process=False)

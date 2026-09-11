@@ -81,6 +81,7 @@ export const TorsoViewer: React.FC = () => {
         color: new THREE.Color('#fcfaf4'),
         roughness: 0.22,
         metalness: 0.04,
+        envMapIntensity: 0.85,
         clearcoat: 0.85,
         clearcoatRoughness: 0.18,
         sheen: 1.0,
@@ -93,6 +94,7 @@ export const TorsoViewer: React.FC = () => {
         color: new THREE.Color('#101014'),
         roughness: 0.26,
         metalness: 0.10,
+        envMapIntensity: 0.70,
         clearcoat: 0.75,
         clearcoatRoughness: 0.20,
         sheen: 0.85,
@@ -144,10 +146,11 @@ export const TorsoViewer: React.FC = () => {
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.08;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
 
     // 4. Orbit Controls Setup
@@ -161,7 +164,7 @@ export const TorsoViewer: React.FC = () => {
     controlsRef.current = controls;
 
     // 5. Sunset Beach Environment
-    const env = new SunsetBeachEnvironment(scene);
+    const env = new SunsetBeachEnvironment(scene, renderer);
 
     // 6. Hit Ripples VFX Manager
     const hitRipples = new HitRipples(scene);
@@ -194,6 +197,7 @@ export const TorsoViewer: React.FC = () => {
                 color: new THREE.Color('#dfccbb'),
                 roughness: 0.5,
                 metalness: 0.08,
+                envMapIntensity: 0.45,
               });
             } else if (mesh.name === 'BikiniThong' || mesh.name.includes('Bikini')) {
               mesh.geometry.computeVertexNormals();
@@ -212,6 +216,7 @@ export const TorsoViewer: React.FC = () => {
                 metalness: 0.0,
                 clearcoat: 0.12,
                 clearcoatRoughness: 0.30,
+                envMapIntensity: 0.70,
                 sheen: 1.0,
                 sheenColor: new THREE.Color('#ffa08a'),
                 vertexColors: true,
